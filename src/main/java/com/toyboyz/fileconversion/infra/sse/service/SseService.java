@@ -22,6 +22,7 @@ public class SseService {
 
     private final SseEmitterRegistry sseEmitterRegistry;
 
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleHistoryEvent(History history) { //엔티티를 직접 주지말고 dto 에 담아서 주자
         notify(history);

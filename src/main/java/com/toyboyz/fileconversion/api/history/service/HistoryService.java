@@ -7,6 +7,8 @@ import com.toyboyz.fileconversion.api.history.entity.History;
 import com.toyboyz.fileconversion.api.history.repository.HistoryRepository;
 import com.toyboyz.fileconversion.debezium.entity.OutboxEvent;
 import com.toyboyz.fileconversion.debezium.repository.OutboxEventRepository;
+import com.toyboyz.fileconversion.worker.job.entity.WorkerJob;
+import com.toyboyz.fileconversion.worker.job.repository.WorkerJobRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,7 +23,7 @@ import java.util.*;
 public class HistoryService {
 
     private final HistoryRepository historyRepository;
-    private final OutboxEventRepository outboxEventRepository;
+    private final WorkerJobRepository workerJobRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
 
@@ -55,10 +57,10 @@ public class HistoryService {
         return saved;
     }
 
-    /** upload-complete 단계: status=2로 바꾸고, fileConvert outbox 생성 */
+    /** payload JSON 만들어 worker_job 테이블에 저장 + history 상태 변경 */
     @Transactional
-    public void markUploadedAndCreateConvertOutbox(List<History> histories) {
-        List<OutboxEvent> outboxList = new ArrayList<>();
+    public void markUploadedAndCreateWorker(List<History> histories) {
+        List<WorkerJob> workerList = new ArrayList<>();
 
         for (History h : histories) {
             // 이미 처리된 것이면 skip
@@ -77,11 +79,13 @@ public class HistoryService {
             payload.put("requestFormat", h.getRequestFormat());
             payload.put("fileName", h.getS3FileName());
 
-            outboxList.add(OutboxEvent.of("file", h.getHistoryId(), "fileConvert", toJson(payload)));
+//            outboxList.add(OutboxEvent.of("file", h.getHistoryId(), "fileConvert", toJson(payload)));
+            workerList.add(WorkerJob.of(toJson(payload)));
         }
 
             historyRepository.saveAll(histories);
-            outboxEventRepository.saveAll(outboxList);
+            workerJobRepository.saveAll(workerList);
+//            outboxEventRepository.saveAll(outboxList);
 
     }
 

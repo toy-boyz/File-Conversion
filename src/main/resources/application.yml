@@ -1,27 +1,41 @@
-spring:
+app:
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://file-conversion-database-1.cn6kiey0qu1a.ap-northeast-2.rds.amazonaws.com:3306/api?useSSL-false&serverTimezone=Asia/Seoul}
-    username: ${SPRING_DATASOURCE_USERNAME:toyboyz}
-    password: ${SPRING_DATASOURCE_PASSWORD:toytoy123}
-  jpa:
-    open-in-view: true
-    hibernate:
-      ddl-auto: validate
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      use-new-id-generator-mappings: false
-    show-sql: true
-    properties:
-      hibernate.format_sql: true
-      dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+    primary:
+      url: jdbc:mysql://localhost:3306/api?serverTimezone=Asia/Seoul
+      username: root
+      password:
+      driver-class-name: com.mysql.cj.jdbc.Driver
 
-  rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST:localhost}
-    port: ${SPRING_RABBITMQ_PORT:5672}
-    username: ${SPRING_RABBITMQ_USERNAME:toyboyz}
-    password: ${SPRING_RABBITMQ_PASSWORD:toyboyz}
-    virtual-host: ${SPRING_RABBITMQ_VHOST:/}
+    secondary:
+      url: jdbc:mysql://localhost:3306/worker?serverTimezone=Asia/Seoul
+      username: root
+      password:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+  s3:
+    bucket: toyboyz-fileconv-bucket
+    region: ap-northeast-2
+    prefix: uploads
+    presign-ttl-seconds: 900   # 15분
+
+spring:
+  open-in-view: true
+  hibernate:
+    ddl-auto: update
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    use-new-id-generator-mappings: false
+  show-sql: true
+  properties:
+    hibernate.format_sql: true
+    dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+
+#  rabbitmq:
+#    host: ${SPRING_RABBITMQ_HOST:localhost}
+#    port: ${SPRING_RABBITMQ_PORT:5672}
+#    username: ${SPRING_RABBITMQ_USERNAME:toyboyz}
+#    password: ${SPRING_RABBITMQ_PASSWORD:toyboyz}
+#    virtual-host: ${SPRING_RABBITMQ_VHOST:/}
 
 management:
   endpoints:
@@ -36,9 +50,3 @@ management:
     rabbit:
       enabled: true
 
-app:
-  s3:
-    bucket: toyboyz-fileconv-bucket
-    region: ap-northeast-2
-    prefix: uploads
-    presign-ttl-seconds: 900   # 15분

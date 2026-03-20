@@ -1,58 +1,33 @@
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_VHOST: /
-      RABBITMQ_DEFAULT_USER: toyboyz
-      RABBITMQ_DEFAULT_PASS: toyboyz
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
-      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
-    healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
-      interval: 5s
-      timeout: 5s
-      retries: 30
+#  rabbitmq:
+#    image: rabbitmq:3-management
+#    container_name: rabbitmq
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    environment:
+#      RABBITMQ_DEFAULT_VHOST: /
+#      RABBITMQ_DEFAULT_USER: toyboyz
+#      RABBITMQ_DEFAULT_PASS: toyboyz
+#    volumes:
+#      - rabbitmq_data:/var/lib/rabbitmq
+#      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+#      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+#    healthcheck:
+#      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+#      interval: 5s
+#      timeout: 5s
+#      retries: 30
 
-  app:
-    profiles: [ "app" ]
-    build: .
-    container_name: fileconv-api
-    ports:
-      - "8080:8080"
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: toyboyz
-      SPRING_RABBITMQ_PASSWORD: toyboyz
-      SPRING_RABBITMQ_VIRTUAL_HOST: /
-
-      SPRING_DATASOURCE_URL: jdbc:mysql://file-conversion-database-1.cn6kiey0qu1a.ap-northeast-2.rds.amazonaws.com:3306/api?useSSL-false&serverTimezone=Asia/Seoul
-      SPRING_DATASOURCE_USERNAME: toyboyz
-      SPRING_DATASOURCE_PASSWORD: toytoy123!
-    healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
-      interval: 5s
-      timeout: 5s
-      retries: 30
-
-  debezium-server:
-    image: quay.io/debezium/server:3.4
-    container_name: debezium-server
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    volumes:
-      - ./debezium/config:/debezium/config
-      - ./debezium/data:/debezium/data
+#  debezium-server:
+#    image: quay.io/debezium/server:3.4
+#    container_name: debezium-server
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    volumes:
+#      - ./debezium/config:/debezium/config
+#      - ./debezium/data:/debezium/data
 
   redis:
     image: redis:7-alpine
@@ -69,5 +44,5 @@ services:
       retries: 30
 
 volumes:
-  rabbitmq_data:
+#  rabbitmq_data:
   redis_data:
