@@ -2,16 +2,41 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: 'prometheus'
+  # Worker Spring Boot actuator (ASG 기반 EC2 자동 탐지)
+  - job_name: 'worker'
     metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['172.30.2.105:8081']
-        labels:
-          application: 'worker'
+    ec2_sd_configs:
+      - region: ap-northeast-2
+        filters:
+          - name: "tag:aws:autoscaling:groupName"
+            values: ["fileconversion-worker-asg"]
+          - name: "instance-state-name"
+            values: ["running"]
+    relabel_configs:
+      # 기본 주소(:80)에서 포트를 8081로 교체
+      - source_labels: [__address__]
+        regex: '([^:]+).*'
+        target_label: __address__
+        replacement: '${1}:8081'
+      # Grafana에서 인스턴스 이름으로 구분
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_private_ip]
+        target_label: private_ip
+
+  # Worker Node Exporter (ASG 기반 EC2 자동 탐지)
   - job_name: 'node-exporter'
-    static_configs:
-      - targets: ['172.30.2.105:9100']
-  - job_name: 'consumer'
-    metrics_path: '/actuator/prometheus' # 경로 변경
-    static_configs:
-      - targets: ['172.30.2.105:8081']
+    ec2_sd_configs:
+      - region: ap-northeast-2
+        filters:
+          - name: "tag:aws:autoscaling:groupName"
+            values: ["fileconversion-worker-asg"]
+          - name: "instance-state-name"
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '([^:]+).*'
+        target_label: __address__
+        replacement: '${1}:9100'
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
