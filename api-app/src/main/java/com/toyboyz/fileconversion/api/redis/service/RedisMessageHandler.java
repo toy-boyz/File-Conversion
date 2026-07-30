@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,8 @@ public class RedisMessageHandler {
                 redisTemplate.opsForHash().increment(GLOBAL_KEY, "completedCount", 1);
                 redisTemplate.opsForHash().increment(GLOBAL_KEY, "completedBytes", subDTO.getSize());
                 statsSseService.broadcastLatestSummary();
+                // 변환 완료 후 Stream 키 1시간 뒤 자동 삭제
+                redisTemplate.expire("progress:" + subDTO.getUuid(), Duration.ofHours(1));
             }
 
         } catch (JsonProcessingException e) {
